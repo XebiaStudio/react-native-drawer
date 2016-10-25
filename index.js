@@ -107,6 +107,40 @@ export default class Drawer extends Component {
   getChildContext = () => ({ drawer: this });
   /*** END CONTEXT ***/
 
+  constructor(props) {
+    super(props)
+
+    this.initialize = this.initialize.bind(this)
+    this.updatePosition = this.updatePosition.bind(this)
+    this.onPanResponderTerminate = this.onPanResponderTerminate.bind(this)
+    this.onStartShouldSetPanResponderCapture = this.onStartShouldSetPanResponderCapture.bind(this)
+    this.onStartShouldSetPanResponder = this.onStartShouldSetPanResponder.bind(this)
+    this.onMoveShouldSetPanResponderCapture = this.onMoveShouldSetPanResponderCapture.bind(this)
+    this.onMoveShouldSetPanResponder = this.onMoveShouldSetPanResponder.bind(this)
+    this.onPanResponderMove = this.onPanResponderMove.bind(this)
+    this.onPanResponderRelease = this.onPanResponderRelease.bind(this)
+    this.processShouldSet = this.processShouldSet.bind(this)
+    this.processMoveShouldSet = this.processMoveShouldSet.bind(this)
+    this.processTapGestures = this.processTapGestures.bind(this)
+    this.testPanResponderMask = this.testPanResponderMask.bind(this)
+    this.terminateActiveTween = this.terminateActiveTween.bind(this)
+    this.open = this.open.bind(this)
+    this.close = this.close.bind(this)
+    this.toggle = this.toggle.bind(this)
+    this.handleSetViewport = this.handleSetViewport.bind(this)
+    this.resync = this.resync.bind(this)
+    this.requiresResync = this.requiresResync.bind(this)
+    this.getOpenLeft = this.getOpenLeft.bind(this)
+    this.getClosedLeft = this.getClosedLeft.bind(this)
+    this.getHeight = this.getHeight.bind(this)
+    this.getMainWidth = this.getMainWidth.bind(this)
+    this.getDrawerWidth = this.getDrawerWidth.bind(this)
+    this.getOpenMask = this.getOpenMask.bind(this)
+    this.getClosedMask = this.getClosedMask.bind(this)
+    this.getOpenOffset = this.getOpenOffset.bind(this)
+    this.getClosedOffset = this.getClosedOffset.bind(this)
+  }
+
   _registerChildDrawer(drawer) {
     // Store child drawer for gesture disambiguation with multi drawer
     // @TODO make cleaner, generalize to work with 3+ drawers, prop to disable/configure
@@ -137,7 +171,7 @@ export default class Drawer extends Component {
     }
   }
 
-  initialize = (props) => {
+  initialize(props) {
     let fullWidth = this.state.viewport.width
     this._offsetClosed = this.getClosedOffset(props, this.state.viewport)
     this._offsetOpen = this.getOpenOffset(props, this.state.viewport)
@@ -197,7 +231,7 @@ export default class Drawer extends Component {
     this.resync(null, props)
   };
 
-  updatePosition = () => {
+  updatePosition() {
     let mainProps = {}
     let drawerProps = {}
     let ratio = (this._left - this._offsetClosed) / (this.getOpenLeft() - this._offsetClosed)
@@ -240,32 +274,32 @@ export default class Drawer extends Component {
     else return this._open ^ Math.abs(dx) > this.state.viewport.width * this.props.panThreshold
   }
 
-  onPanResponderTerminate = (e, gestureState) => {
+  onPanResponderTerminate(e, gestureState) {
     this._panning = false
     this.shouldOpenDrawer(gestureState.dx) ? this.open() : this.close()
   };
     
-  onStartShouldSetPanResponderCapture = (e, gestureState) => {
+  onStartShouldSetPanResponderCapture(e, gestureState) {
     if (this.shouldCaptureGestures()) return this.processShouldSet(e, gestureState)
     return false
   };
 
-  onStartShouldSetPanResponder = (e, gestureState) => {
+  onStartShouldSetPanResponder(e, gestureState) {
     if (!this.shouldCaptureGestures()) return this.processShouldSet(e, gestureState)
     return false
   };
 
-  onMoveShouldSetPanResponderCapture = (e, gestureState) => {
+  onMoveShouldSetPanResponderCapture(e, gestureState) {
     if (this.shouldCaptureGestures() && this.props.negotiatePan) return this.processMoveShouldSet(e, gestureState)
     return false
   };
 
-  onMoveShouldSetPanResponder = (e, gestureState) => {
+  onMoveShouldSetPanResponder(e, gestureState) {
     if (!this.shouldCaptureGestures() && this.props.negotiatePan) return this.processMoveShouldSet(e, gestureState)
     return false
   };
 
-  onPanResponderMove = (e, gestureState) => {
+  onPanResponderMove(e, gestureState) {
     if (!this.props.acceptPan) return false
 
     //Do nothing if we are panning the wrong way
@@ -281,7 +315,7 @@ export default class Drawer extends Component {
     this._panning = true
   };
 
-  onPanResponderRelease = (e, gestureState) => {
+  onPanResponderRelease(e, gestureState) {
     this._panning = false
     if (Date.now() - this._panStartTime < TAP_DURATION) this.processTapGestures()
     if (Math.abs(gestureState.dx) < 50 && this._activeTween) return
@@ -291,7 +325,7 @@ export default class Drawer extends Component {
     this._prevLeft = this._left
   };
 
-  processShouldSet = (e, gestureState) => {
+  processShouldSet(e, gestureState) {
     let inMask = this.testPanResponderMask(e, gestureState)
     if (!inMask) return false
     this._panStartTime = Date.now()
@@ -302,7 +336,7 @@ export default class Drawer extends Component {
     return true
   };
 
-  processMoveShouldSet = (e, gestureState) => {
+  processMoveShouldSet(e, gestureState) {
     let inMask = this.testPanResponderMask(e, gestureState)
     if (!inMask) return false
     if (!this.props.acceptPan) return false
@@ -320,7 +354,7 @@ export default class Drawer extends Component {
     return true
   };
 
-  processTapGestures = () => {
+  processTapGestures() {
     if (this._activeTween) return false // disable tap gestures during tween
     if (this.props.acceptTap || (this.props.tapToClose && this._open)) {
       this._open ? this.close() : this.open()
@@ -345,7 +379,7 @@ export default class Drawer extends Component {
     return false
   }
 
-  testPanResponderMask = (e, gestureState) => {
+  testPanResponderMask(e, gestureState) {
     if (this.props.disabled) return false
 
     // Disable if parent or child drawer exist and are open
@@ -362,14 +396,14 @@ export default class Drawer extends Component {
     return true
   };
 
-  terminateActiveTween = () => {
+  terminateActiveTween() {
     if (this._activeTween) {
       this._activeTween.terminate()
       this._activeTween = null
     }
   };
 
-  open = (type, cb) => {
+  open(type, cb) {
     let start = this._left
     let end = this.getOpenLeft()
 
@@ -403,7 +437,7 @@ export default class Drawer extends Component {
     })
   };
 
-  close = (type, cb) => {
+  close(type, cb) {
     let start = this._left
     let end = this.getClosedLeft()
 
@@ -455,11 +489,11 @@ export default class Drawer extends Component {
     if (this._interactionHandle) InteractionManager.clearInteractionHandle(this._interactionHandle)
   }
 
-  toggle = () => {
+  toggle() {
     this._open ? this.close() : this.open()
   };
 
-  handleSetViewport = (e) => {
+  handleSetViewport(e) {
     let viewport = e.nativeEvent.layout
     let oldViewport = this.state.viewport
     if (viewport.width === oldViewport.width && viewport.height === oldViewport.height) return
@@ -467,7 +501,7 @@ export default class Drawer extends Component {
     this.resync(viewport, null, didRotationChange)
   };
 
-  resync = (viewport, props, didRotationChange) => {
+  resync(viewport, props, didRotationChange) {
     if (didRotationChange) this._syncAfterUpdate = true
     viewport = viewport || this.state.viewport
     props = props || this.props
@@ -476,7 +510,7 @@ export default class Drawer extends Component {
     this.setState({ viewport })
   };
 
-  requiresResync = (nextProps) => {
+  requiresResync(nextProps) {
     for (let i = 0; i < propsWhomRequireUpdate.length; i++) {
       let key = propsWhomRequireUpdate[i]
       if (this.props[key] !== nextProps[key]) return true
@@ -484,26 +518,26 @@ export default class Drawer extends Component {
   };
 
   /*** DYNAMIC GETTERS ***/
-  getOpenLeft = () => this.state.viewport.width - this._offsetOpen;
-  getClosedLeft = () => this._offsetClosed;
-  getHeight = () => this.state.viewport.height;
-  getMainWidth = () => this.state.viewport.width - this._offsetClosed;
-  getDrawerWidth = () => this.state.viewport.width - this._offsetOpen;
-  getOpenMask = () => {
+  getOpenLeft() { return this.state.viewport.width - this._offsetOpen };
+  getClosedLeft() { return this._offsetClosed };
+  getHeight() { return this.state.viewport.height };
+  getMainWidth() { return this.state.viewport.width - this._offsetClosed };
+  getDrawerWidth() { return this.state.viewport.width - this._offsetOpen };
+  getOpenMask() {
     if (this.props.panCloseMask && this.props.panCloseMask % 1 === 0) return this.props.panCloseMask
     if (this.props.panCloseMask) return this.state.viewport.width * this.props.panCloseMask
     return Math.max(0.05, this._offsetOpen)
   };
-  getClosedMask = () => {
+  getClosedMask() {
     if (this.props.panOpenMask && this.props.panOpenMask % 1 === 0) return this.props.panOpenMask
     if (this.props.panOpenMask) return this.state.viewport.width * this.props.panOpenMask
     return Math.max(0.05, this._offsetClosed)
   };
-  getOpenOffset = (props, viewport) => {
+  getOpenOffset(props, viewport) {
     if (typeof props.openDrawerOffset === 'function') return props.openDrawerOffset(viewport)
     return props.openDrawerOffset % 1 === 0 ? props.openDrawerOffset : props.openDrawerOffset * viewport.width
   };
-  getClosedOffset = (props, viewport) => {
+  getClosedOffset(props, viewport) {
     if (typeof props.closedDrawerOffset === 'function') return props.closedDrawerOffset(viewport)
     return props.closedDrawerOffset % 1 === 0 ? props.closedDrawerOffset : props.closedDrawerOffset * viewport.width
   };
